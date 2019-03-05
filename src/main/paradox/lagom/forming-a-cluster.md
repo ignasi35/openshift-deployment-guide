@@ -2,6 +2,8 @@
 
 If you're using any of the Akka cluster based features of Lagom, such as Lagom Persistence, or Lagom Pub Sub, you will need to configure your Lagom services to form a cluster. Akka clusters are groups of nodes, usually running the same code base, that distribute their state and work across them. For example, Lagom persistent entities are distributed across an Akka cluster ensuring that each entity only resides on one node at a time, ensuring that strongly consistent operations can be done on that entity without any need of coordination, such as transactions, between nodes.
 
+
+
 ## Bootstrap process
 
 @@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #bootstrap-process }
@@ -10,6 +12,22 @@ If you're using any of the Akka cluster based features of Lagom, such as Lagom P
 @@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #bootstrap-deps }
 
 @@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #configuring }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #configuring-akka-cluster }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #configuring-akka-management-http }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #deployment-spec-management-port }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #deployment-spec-health-checks }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #configuring-akka-cluster-bootstrap }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #deployment-spec-replicas }
+
+@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #deployment-spec-rbac }
+
+
 
 ## Starting
 
@@ -31,4 +49,4 @@ And now bind that in `com.example.shoppingcart.impl.ShoppingCartModule`:
 
 @@snip [ShoppingCartModule.java](code/jdocs/lagom/FormingACluster.java) { #start }
 
-@@include[forming-a-cluster.md](../includes/forming-a-cluster.md) { #deployment-spec }
+

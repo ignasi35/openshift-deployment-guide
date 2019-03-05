@@ -50,9 +50,14 @@ Maven
 <!--- #bootstrap-deps --->
 
 <!--- #configuring -->
+
 ## Configuring cluster bootstrap
 
 There are three components that need to be configured for cluster bootstrap to work, Akka Cluster, Akka Management HTTP, and Akka Cluster Bootstrap.
+
+<!--- #configuring -->
+
+<!--- #configuring-akka-cluster -->
 
 ### Akka Cluster
 
@@ -70,13 +75,21 @@ akka {
 }
 ```
 
-### Akka management HTTP
+<!--- #configuring-akka-cluster -->
+
+<!--- #configuring-akka-management-http -->
+
+###Akka management HTTP
 
 Akka management HTTP provides an HTTP API for querying the status of the Akka cluster, used both by the bootstrap process, as well as healthchecks to ensure requests don't get routed to your pods until the pods have joined the cluster.
 
 The default configuration for Akka management HTTP is suitable for use in Kubernetes, it will bind to a default port of 8558 on the pods external IP address.
 
 It will also expose liveness and readiness health checks on `/alive` and `/ready` respectively, and included in the readiness check will be a check to ensure that a cluster has been formed. In Kubernetes, if an application is live, it means its running - it hasn't crashed. But it may not necessarily be ready to serve requests, for example, it might not yet have managed to connect to a database, or in our case, it may not have formed a cluster yet. By separating liveness and readiness, Kubernetes can distinguish between fatal errors, like crashing, and transient errors, like not being able to contact other resources that the application depends on, allowing Kubernetes to make more intelligent decisions about whether an application needs to be restarted, or if it just needs to be given time to sort itself out.
+
+<!--- #configuring-akka-management-http -->
+
+<!--- #configuring-akka-cluster-bootstrap -->
 
 ### Cluster bootstrap
 
@@ -108,7 +121,7 @@ A few things to note:
 * The `service-name` needs to match the `app` label applied to your pods in the deployment spec.
 * The `required-contact-point-nr` has been configured to read the environment variable `REQUIRED_CONTACT_POINT_NR`. This is the number of pods that Akka Cluster Bootstrap must discover before it will form a cluster. It's very important to get this number right, let's say it was configured to be two, and you deployed five pods for this application, and all five started at once, it's possible, due to eventual consistency in the Kubernetes API, that two of the nodes might discover each other, and decide to form a cluster, and the other two nodes might discover each other, and also decide to form a cluster. The result will be two separate clusters formed, and this can have disastrous results. For this reason, we'll pass this in the deployment spec, which will be the same place that we'll configure the number of replicas. This will help us ensure that the number of replicas equals the required contact point number, ensuring we safely form one and only one cluster on bootstrap.
 * The `pod-port-name` and `pod-label-selector` are actually set to their default values, and so are not needed, however it's important that they match what's in the deployment spec. The `pod-port-name` needs to match a `ports` entry in the pod spec, while the `pod-label-selector` needs to match a query that will return only and all the pods for this particular service.
-<!--- #configuring -->
+<!--- #configuring-akka-cluster-bootstrap -->
 
 ## Starting
 
@@ -122,6 +135,8 @@ Java
 
 <!--- #deployment-spec --->
 ## Updating the deployment spec
+
+<!--- #deployment-spec-rbac --->
 
 ### Role-Based Access Control
 
@@ -166,6 +181,10 @@ One thing to be aware of when using role based access control, the `pod-reader` 
 
 If this is a concern, one solution might be to create a separate namespace for each application you wish to deploy. You may find the configuration overhead of doing this very high though, it's not what Kubernetes namespaces are intended to be used for.
 
+<!--- #deployment-spec-rbac --->
+
+<!--- #deployment-spec-replicas --->
+
 ### Replicas and contact points
 
 In the @ref:[cluster bootstrap configuration section](#cluster-bootstrap), we used a `REQUIRED_CONTACT_POINT_NR` environment variable. Let's configure that now in our spec. It needs to match the number of replicas that we're going to deploy. If you're really strapped for resources in your cluster, you might set this to one, but for the purposes of this demo we strongly recommend that you set it to 3 or more to see an Akka cluster form.
@@ -192,7 +211,11 @@ Now down in the environment variables section, add the `REQUIRED_CONTACT_POINT_N
   value: "3"
 ```
 
-### Management port configuration
+<!--- #deployment-spec-replicas --->
+
+<!--- #deployment-spec-management-port --->
+
+###Management port configuration
 
 In the @ref:[cluster bootstrap configuration section](#cluster-bootstrap), we configured the `pod-port-name` to be `management`. The Kubernetes API cluster bootstrap discovery is going to look for a port declared by the pod called `management`, to know which port to use to speak to Akka HTTP management, so we need to declare that in the `ports` section of the pod spec:
 
@@ -201,6 +224,10 @@ ports:
   - name: management
     containerPort: 8558
 ```
+
+<!--- #deployment-spec-management-port --->
+
+<!--- #deployment-spec-health-checks --->
 
 ### Health checks
 
@@ -222,4 +249,4 @@ livenessProbe:
   failureThreshold: 10
   initialDelaySeconds: 20
 ```
-<!--- #deployment-spec --->
+<!--- #deployment-spec-health-checks --->
